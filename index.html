@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Словарный тренажёр</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-card: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-hint: #999999;
+            --input-bg: #f5f5f5;
+            --input-border: #e0e0e0;
+            --input-focus: #667eea;
+            --input-correct: #e8f5e9;
+            --input-correct-border: #4caf50;
+            --input-incorrect: #ffebee;
+            --input-incorrect-border: #f44336;
+            --feedback-correct: #4caf50;
+            --feedback-incorrect: #f44336;
+            --progress-bg: #e0e0e0;
+            --progress-fill: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --tag-bg: #e8eaf6;
+            --tag-color: #667eea;
+            --btn-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --btn-hover-shadow: rgba(102, 126, 234, 0.4);
+            --word-list-border: #eeeeee;
+            --word-item-correct: #4caf50;
+            --word-item-incorrect: #f44336;
+            --problem-mild-bg: #fff3e0;
+            --problem-mild-color: #ff9800;
+            --problem-severe-bg: #ffebee;
+            --problem-severe-color: #f44336;
+            --stats-bg: #f5f5f5;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-theme {
+            --bg-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --bg-card: #1e1e2e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --text-hint: #808080;
+            --input-bg: #2a2a3e;
+            --input-border: #3a3a4e;
+            --input-focus: #8892b0;
+            --input-correct: #1b3a2a;
+            --input-correct-border: #4caf50;
+            --input-incorrect: #3a1b1b;
+            --input-incorrect-border: #f44336;
+            --feedback-correct: #81c784;
+            --feedback-incorrect: #e57373;
+            --progress-bg: #2a2a3e;
+            --progress-fill: linear-gradient(135deg, #64ffda 0%, #8892b0 100%);
+            --tag-bg: #2a2a4e;
+            --tag-color: #64ffda;
+            --btn-gradient: linear-gradient(135deg, #64ffda 0%, #8892b0 100%);
+            --btn-hover-shadow: rgba(100, 255, 218, 0.3);
+            --word-list-border: #2a2a3e;
+            --word-item-correct: #4caf50;
+            --word-item-incorrect: #f44336;
+            --problem-mild-bg: #3a2a1a;
+            --problem-mild-color: #ff9800;
+            --problem-severe-bg: #3a1a1a;
+            --problem-severe-color: #f44336;
+            --stats-bg: #2a2a3e;
+            --shadow: rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.3s;
+        }
+
+        .container {
+            background: var(--bg-card);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px var(--shadow);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            font-size: 2em;
+            transition: color 0.3s;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            transition: color 0.3s;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border: 2px solid var(--input-border);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px var(--shadow);
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .start-screen, .game-screen, .result-screen {
+            display: none;
+        }
+
+        .start-screen.active, .game-screen.active, .result-screen.active {
+            display: block;
+        }
+
+        .btn {
+            background: var(--btn-gradient);
+            color: #ffffff;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: block;
+            margin: 20px auto;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px var(--btn-hover-shadow);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .progress-bar {
+            background: var(--progress-bg);
+            border-radius: 10px;
+            height: 20px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: background 0.3s;
+        }
+
+        .progress-fill {
+            background: var(--progress-fill);
+            height: 100%;
+            transition: width 0.3s;
+            border-radius: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            transition: color 0.3s;
+        }
+
+        .word-display {
+            text-align: center;
+            font-size: 2.5em;
+            margin: 40px 0;
+            letter-spacing: 5px;
+            color: var(--text-primary);
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .word-display .missing-letter {
+            color: var(--feedback-incorrect);
+            border-bottom: 3px solid var(--feedback-incorrect);
+        }
+
+        .input-group {
+            margin: 30px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            font-size: 1.1em;
+            transition: color 0.3s;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.8em;
+            border: 3px solid var(--input-border);
+            border-radius: 10px;
+            text-align: center;
+            transition: border-color 0.3s, background 0.3s;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--input-focus);
+        }
+
+        .input-group input.correct {
+            border-color: var(--input-correct-border) !important;
+            background: var(--input-correct) !important;
+        }
+
+        .input-group input.incorrect {
+            border-color: var(--input-incorrect-border) !important;
+            background: var(--input-incorrect) !important;
+        }
+
+        .feedback {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1.3em;
+            min-height: 35px;
+            transition: color 0.3s;
+        }
+
+        .feedback.correct {
+            color: var(--feedback-correct);
+        }
+
+        .feedback.incorrect {
+            color: var(--feedback-incorrect);
+        }
+
+        .results-summary {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .score {
+            font-size: 3em;
+            color: var(--tag-color);
+            margin: 20px 0;
+            transition: color 0.3s;
+        }
+
+        .result-message {
+            color: var(--text-secondary);
+            font-size: 1.2em;
+            margin-top: 10px;
+            transition: color 0.3s;
+        }
+
+        .section {
+            background: var(--stats-bg);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            transition: background 0.3s;
+        }
+
+        .section h3 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            transition: color 0.3s;
+        }
+
+        .problem-letter {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .problem-letter.mild {
+            background: var(--problem-mild-bg);
+            color: var(--problem-mild-color);
+        }
+
+        .problem-letter.severe {
+            background: var(--problem-severe-bg);
+            color: var(--problem-severe-color);
+        }
+
+        .stat-row {
+            padding: 10px;
+            border-bottom: 1px solid var(--word-list-border);
+            display: flex;
+            justify-content: space-between;
+            transition: border-color 0.3s;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-letter {
+            font-weight: bold;
+            color: var(--text-primary);
+            transition: color 0.3s;
+        }
+
+        .stat-value {
+            color: var(--text-secondary);
+            transition: color 0.3s;
+        }
+
+        .word-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .word-item {
+            padding: 12px;
+            border-bottom: 1px solid var(--word-list-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.3s;
+        }
+
+        .word-item:last-child {
+            border-bottom: none;
+        }
+
+        .word-item.correct {
+            border-left: 4px solid var(--word-item-correct);
+        }
+
+        .word-item.incorrect {
+            border-left: 4px solid var(--word-item-incorrect);
+        }
+
+        .emoji {
+            font-size: 4em;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .shake {
+            animation: shake 0.3s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse {
+            animation: pulse 0.3s;
+        }
+
+        .mode-selection {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
+            color: var(--text-primary);
+            padding: 15px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--input-focus);
+            transform: translateY(-2px);
+        }
+
+        .mode-btn.active {
+            border-color: var(--input-focus);
+            background: var(--tag-bg);
+        }
+
+        .mode-btn-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .mode-btn-desc {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .word-display {
+                font-size: 2em;
+                margin: 30px 0;
+            }
+
+            .theme-toggle {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+
+    <div class="container">
+        <h1>📚 Словарный тренажёр</h1>
+        <p class="subtitle">Тест на знание гласных в словарных словах</p>
+
+        <div class="start-screen active" id="startScreen">
+            <div class="emoji">🎮</div>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6; transition: color 0.3s;">
+                Вставьте пропущенную гласную букву в слово.<br>
+                Система определит ваши слабые места!
+            </p>
+            
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 10px; font-weight: bold; transition: color 0.3s;">
+                Выберите режим:
+            </p>
+            <div class="mode-selection">
+                <button class="mode-btn active" data-mode="20" onclick="selectMode(this)">
+                    <span class="mode-btn-title">Быстрый</span>
+                    <span class="mode-btn-desc">20 слов</span>
+                </button>
+                <button class="mode-btn" data-mode="50" onclick="selectMode(this)">
+                    <span class="mode-btn-title">Средний</span>
+                    <span class="mode-btn-desc">50 слов</span>
+                </button>
+                <button class="mode-btn" data-mode="0" onclick="selectMode(this)">
+                    <span class="mode-btn-title">Полный</span>
+                    <span class="mode-btn-desc">Все слова</span>
+                </button>
+            </div>
+            <button class="btn" onclick="startGame()">Начать игру</button>
+        </div>
+
+        <div class="game-screen" id="gameScreen">
+            <div class="stats">
+                <span>Вопрос: <strong id="currentQuestion">1</strong>/<strong id="totalQuestions">0</strong></span>
+                <span>✅ <strong id="correctCount">0</strong></span>
+                <span>❌ <strong id="incorrectCount">0</strong></span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="word-display" id="wordDisplay"></div>
+
+            <div class="input-group">
+                <label for="letterInput">Вставьте пропущенную гласную букву:</label>
+                <input type="text" id="letterInput" maxlength="1" autocomplete="off">
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+
+            <button class="btn" id="submitBtn" onclick="checkAnswer()">Проверить</button>
+            <button class="btn" id="nextBtn" onclick="nextWord()" style="display: none;">Следующее слово</button>
+        </div>
+
+        <div class="result-screen" id="resultScreen">
+            <div class="emoji" id="resultEmoji"></div>
+            <div class="results-summary">
+                <h2>Результаты теста</h2>
+                <div class="score" id="finalScore"></div>
+                <p class="result-message" id="resultMessage"></p>
+            </div>
+
+            <div class="section" id="problemLettersSection">
+                <h3>⚠️ Проблемные буквы:</h3>
+                <div id="problemLettersList"></div>
+            </div>
+
+            <div class="section">
+                <h3>📊 Статистика по буквам:</h3>
+                <div id="letterStats"></div>
+            </div>
+
+            <div>
+                <h3 style="margin: 20px 0 10px 0; color: var(--text-primary); transition: color 0.3s;">📝 Подробные результаты:</h3>
+                <div class="word-list" id="wordList"></div>
+            </div>
+
+            <button class="btn" onclick="restartGame()">Пройти ещё раз</button>
+        </div>
+    </div>
+
+    <script>
+        // Database of dictionary words with problematic vowels
+        // missingIndices contains 0-based indices of vowels that are commonly misspelled
+        const wordDatabase = [
+            { word: 'абитуриент', missingIndices: [2] },
+            { word: 'абонемент', missingIndices: [6] },
+            { word: 'абрикос', missingIndices: [1] },
+            { word: 'абрикосовый', missingIndices: [1] },
+            { word: 'академия', missingIndices: [1] },
+            { word: 'академический', missingIndices: [1] },
+            { word: 'аквамарин', missingIndices: [2] },
+            { word: 'акварель', missingIndices: [2] },
+            { word: 'акварельный', missingIndices: [2] },
+            { word: 'аккомпанемент', missingIndices: [2] },
+            { word: 'аккомпанировать', missingIndices: [2] },
+            { word: 'аккомпаниатор', missingIndices: [2] },
+            { word: 'аннотация', missingIndices: [2] },
+            { word: 'антресоли', missingIndices: [3] },
+            { word: 'апелляция', missingIndices: [2] },
+            { word: 'апеллировать', missingIndices: [2] },
+            { word: 'аплодировать', missingIndices: [2] },
+            { word: 'аплодисменты', missingIndices: [2] },
+            { word: 'аппаратура', missingIndices: [2] },
+            { word: 'аппетит', missingIndices: [2] },
+            { word: 'аромат', missingIndices: [3] },
+            { word: 'ароматный', missingIndices: [3] },
+            { word: 'архитектор', missingIndices: [3] },
+            { word: 'архитектура', missingIndices: [3] },
+            { word: 'асфальт', missingIndices: [3] },
+            { word: 'асфальтировать', missingIndices: [3] },
+            { word: 'атмосфера', missingIndices: [3] },
+            { word: 'атмосферный', missingIndices: [3] },
+            { word: 'аттракцион', missingIndices: [2] },
+            { word: 'аукцион', missingIndices: [3] },
+            { word: 'багаж', missingIndices: [2] },
+            { word: 'багажный', missingIndices: [2] },
+            { word: 'багровый', missingIndices: [2] },
+            { word: 'багроветь', missingIndices: [2] },
+            { word: 'багряный', missingIndices: [2] },
+            { word: 'бадминтон', missingIndices: [2] },
+            { word: 'баланс', missingIndices: [2] },
+            { word: 'балансировать', missingIndices: [2] },
+            { word: 'балкон', missingIndices: [2] },
+            { word: 'балконный', missingIndices: [2] },
+            { word: 'барельеф', missingIndices: [3] },
+            { word: 'баскетбол', missingIndices: [2] },
+            { word: 'баскетбольный', missingIndices: [2] },
+            { word: 'бассейн', missingIndices: [2] },
+            { word: 'берёза', missingIndices: [2] },
+            { word: 'берёзовый', missingIndices: [2] },
+            { word: 'бирюзовый', missingIndices: [2] },
+            { word: 'богатый', missingIndices: [2] },
+            { word: 'богатство', missingIndices: [2] },
+            { word: 'богатырь', missingIndices: [2] },
+            { word: 'брошюра', missingIndices: [4] },
+            { word: 'брошюровать', missingIndices: [4] },
+            { word: 'бюллетень', missingIndices: [3] },
+            { word: 'вакцина', missingIndices: [2] },
+            { word: 'вакцинация', missingIndices: [2] },
+            { word: 'вакцинировать', missingIndices: [2] },
+            { word: 'вариант', missingIndices: [3] },
+            { word: 'вариативный', missingIndices: [3] },
+            { word: 'велосипед', missingIndices: [2] },
+            { word: 'велосипедный', missingIndices: [2] },
+            { word: 'вентилятор', missingIndices: [3] },
+            { word: 'вентиляторный', missingIndices: [3] },
+            { word: 'вермишель', missingIndices: [3] },
+            { word: 'вестибюль', missingIndices: [3] },
+            { word: 'ветеран', missingIndices: [2] },
+            { word: 'ветеранский', missingIndices: [2] },
+            { word: 'винегрет', missingIndices: [3] },
+            { word: 'виртуальный', missingIndices: [3] },
+            { word: 'виртуоз', missingIndices: [3] },
+            { word: 'виртуозный', missingIndices: [3] },
+            { word: 'витраж', missingIndices: [3] },
+            { word: 'витражный', missingIndices: [3] },
+            { word: 'владелец', missingIndices: [3] },
+            { word: 'владеть', missingIndices: [3] },
+            { word: 'возражать', missingIndices: [2] },
+            { word: 'возражение', missingIndices: [2] },
+            { word: 'вокзал', missingIndices: [2] },
+            { word: 'вокзальный', missingIndices: [2] },
+            { word: 'волейбол', missingIndices: [2] },
+            { word: 'волейбольный', missingIndices: [2] },
+            { word: 'воображать', missingIndices: [2] },
+            { word: 'воображение', missingIndices: [2] },
+            { word: 'воплотить', missingIndices: [2] },
+            { word: 'воплощать', missingIndices: [2] },
+            { word: 'воплощение', missingIndices: [2] },
+            { word: 'впечатлить', missingIndices: [2] },
+            { word: 'впечатление', missingIndices: [2] },
+            { word: 'выразительный', missingIndices: [2] },
+            { word: 'выразить', missingIndices: [2] },
+            { word: 'выражать', missingIndices: [2] },
+            { word: 'выражение', missingIndices: [2] },
+            { word: 'газон', missingIndices: [2] },
+            { word: 'галактика', missingIndices: [2] },
+            { word: 'галактический', missingIndices: [2] },
+            { word: 'галерея', missingIndices: [2] },
+            { word: 'гармония', missingIndices: [2] },
+            { word: 'гармоничный', missingIndices: [2] },
+            { word: 'гарнизон', missingIndices: [3] },
+            { word: 'геолог', missingIndices: [2] },
+            { word: 'геологический', missingIndices: [2] },
+            { word: 'геология', missingIndices: [2] },
+            { word: 'герой', missingIndices: [2] },
+            { word: 'героизм', missingIndices: [2] },
+            { word: 'героический', missingIndices: [2] },
+            { word: 'гипотеза', missingIndices: [3] },
+            { word: 'гипотетический', missingIndices: [3] },
+            { word: 'гормон', missingIndices: [2] },
+            { word: 'горячий', missingIndices: [2] },
+            { word: 'горизонт', missingIndices: [2] },
+            { word: 'горизонтальный', missingIndices: [2] },
+            { word: 'грамматика', missingIndices: [3] },
+            { word: 'грамматический', missingIndices: [3] },
+            { word: 'грамота', missingIndices: [2] },
+            { word: 'грамотный', missingIndices: [2] },
+            { word: 'громадный', missingIndices: [2] },
+            { word: 'громоздкий', missingIndices: [2] },
+            { word: 'громоздить', missingIndices: [2] },
+            { word: 'дебаты', missingIndices: [2] },
+            { word: 'декларация', missingIndices: [2] },
+            { word: 'декорация', missingIndices: [2] },
+            { word: 'декоративный', missingIndices: [2] },
+            { word: 'деликатес', missingIndices: [2] },
+            { word: 'деликатный', missingIndices: [2] },
+            { word: 'демократ', missingIndices: [2] },
+            { word: 'демократичный', missingIndices: [2] },
+            { word: 'демонстрировать', missingIndices: [2] },
+            { word: 'демонстрация', missingIndices: [2] },
+            { word: 'диалог', missingIndices: [2] },
+            { word: 'диалоговый', missingIndices: [2] },
+            { word: 'диалогический', missingIndices: [2] },
+            { word: 'диапазон', missingIndices: [3] },
+            { word: 'динамика', missingIndices: [3] },
+            { word: 'динамический', missingIndices: [3] },
+            { word: 'динамичный', missingIndices: [3] },
+            { word: 'дирижёр', missingIndices: [3] },
+            { word: 'дирижировать', missingIndices: [3] },
+            { word: 'диспетчер', missingIndices: [2] },
+            { word: 'диспетчерский', missingIndices: [2] },
+            { word: 'дистанция', missingIndices: [3] },
+            { word: 'дистанционный', missingIndices: [3] },
+            { word: 'дисциплина', missingIndices: [2] },
+            { word: 'дисциплинарный', missingIndices: [2] },
+            { word: 'дисциплинировать', missingIndices: [2] },
+            { word: 'желание', missingIndices: [2] },
+            { word: 'желать', missingIndices: [2] },
+            { word: 'жираф', missingIndices: [1] },
+            { word: 'жокей', missingIndices: [1] },
+            { word: 'жонглёр', missingIndices: [3] },
+            { word: 'жюри', missingIndices: [1] },
+            { word: 'знакомить', missingIndices: [2] },
+            { word: 'знакомиться', missingIndices: [2] },
+            { word: 'знакомый', missingIndices: [2] },
+            { word: 'знаменитый', missingIndices: [2] },
+            { word: 'знаменовать', missingIndices: [2] },
+            { word: 'игнорировать', missingIndices: [2] },
+            { word: 'идеал', missingIndices: [2] },
+            { word: 'идеализировать', missingIndices: [2] },
+            { word: 'идеалист', missingIndices: [2] },
+            { word: 'идеальный', missingIndices: [2] },
+            { word: 'иждивенец', missingIndices: [3] },
+            { word: 'иллюзия', missingIndices: [2] },
+            { word: 'иллюзионист', missingIndices: [2] },
+            { word: 'индивид', missingIndices: [2] },
+            { word: 'индивидуальный', missingIndices: [2] },
+            { word: 'иней', missingIndices: [2] },
+            { word: 'инженер', missingIndices: [3] },
+            { word: 'инженерный', missingIndices: [3] },
+            { word: 'инженерский', missingIndices: [3] },
+            { word: 'инициатива', missingIndices: [2] },
+            { word: 'инициативный', missingIndices: [2] },
+            { word: 'интеллект', missingIndices: [3] },
+            { word: 'интеллектуальный', missingIndices: [3] },
+            { word: 'интеллигент', missingIndices: [3] },
+            { word: 'интеллигентный', missingIndices: [3] },
+            { word: 'интеллигенция', missingIndices: [3] },
+            { word: 'интенсивный', missingIndices: [2] },
+            { word: 'интерьер', missingIndices: [3] },
+            { word: 'интерьерный', missingIndices: [3] },
+            { word: 'исказить', missingIndices: [3] },
+            { word: 'искажение', missingIndices: [3] },
+            { word: 'истина', missingIndices: [2] },
+            { word: 'истинный', missingIndices: [2] },
+            { word: 'кампания', missingIndices: [2] },
+            { word: 'каморка', missingIndices: [2] },
+            { word: 'каникулы', missingIndices: [2] },
+            { word: 'канитель', missingIndices: [2] },
+            { word: 'канонада', missingIndices: [2] },
+            { word: 'канцелярия', missingIndices: [2] },
+            { word: 'канцелярский', missingIndices: [2] },
+            { word: 'капюшон', missingIndices: [2] },
+            { word: 'кардинальный', missingIndices: [2] },
+            { word: 'карикатура', missingIndices: [2] },
+            { word: 'карикатурный', missingIndices: [2] },
+            { word: 'карикатурист', missingIndices: [2] },
+            { word: 'касатка', missingIndices: [2] },
+            { word: 'ласточек', missingIndices: [2] },
+            { word: 'катакомба', missingIndices: [3] },
+            { word: 'катастрофа', missingIndices: [3] },
+            { word: 'квалификация', missingIndices: [2] },
+            { word: 'квитанция', missingIndices: [3] },
+            { word: 'кинематограф', missingIndices: [3] },
+            { word: 'коварный', missingIndices: [2] },
+            { word: 'коварство', missingIndices: [2] },
+            { word: 'колдун', missingIndices: [2] },
+            { word: 'колдовать', missingIndices: [2] },
+            { word: 'колдовской', missingIndices: [2] },
+            { word: 'колебание', missingIndices: [2] },
+            { word: 'колебаться', missingIndices: [2] },
+            { word: 'коллектив', missingIndices: [2] },
+            { word: 'коллективный', missingIndices: [2] },
+            { word: 'коллекция', missingIndices: [2] },
+            { word: 'коллекционный', missingIndices: [2] },
+            { word: 'коллекционировать', missingIndices: [2] },
+            { word: 'колоссальный', missingIndices: [2] },
+            { word: 'колыхать', missingIndices: [2] },
+            { word: 'колыхаться', missingIndices: [2] },
+            { word: 'комбинация', missingIndices: [3] },
+            { word: 'комбинировать', missingIndices: [3] },
+            { word: 'комедия', missingIndices: [3] },
+            { word: 'комедийный', missingIndices: [3] },
+            { word: 'компания', missingIndices: [2] },
+            { word: 'компетентный', missingIndices: [2] },
+            { word: 'компетенция', missingIndices: [2] },
+            { word: 'компонент', missingIndices: [2] },
+            { word: 'компьютер', missingIndices: [2] },
+            { word: 'компьютерный', missingIndices: [2] },
+            { word: 'комфорт', missingIndices: [2] },
+            { word: 'комфортный', missingIndices: [2] },
+            { word: 'конверт', missingIndices: [2] },
+            { word: 'конкурент', missingIndices: [2] },
+            { word: 'конкуренция', missingIndices: [2] },
+            { word: 'континент', missingIndices: [2] },
+            { word: 'конференция', missingIndices: [2] },
+            { word: 'конфликт', missingIndices: [2] },
+            { word: 'конфликтовать', missingIndices: [2] },
+            { word: 'конфорка', missingIndices: [2] },
+            { word: 'корифей', missingIndices: [2] },
+            { word: 'коричневый', missingIndices: [2] },
+            { word: 'корзина', missingIndices: [2] },
+            { word: 'король', missingIndices: [2] },
+            { word: 'королевство', missingIndices: [2] },
+            { word: 'косатка', missingIndices: [2] },
+            { word: 'дельфиновых', missingIndices: [2] },
+            { word: 'космос', missingIndices: [2] },
+            { word: 'космический', missingIndices: [2] },
+            { word: 'кромешный', missingIndices: [2] },
+            { word: 'лабиринт', missingIndices: [3] },
+            { word: 'легенда', missingIndices: [2] },
+            { word: 'легендарный', missingIndices: [2] },
+            { word: 'лелеять', missingIndices: [2] },
+            { word: 'либерал', missingIndices: [2] },
+            { word: 'либеральный', missingIndices: [2] },
+            { word: 'мажор', missingIndices: [2] },
+            { word: 'мажорный', missingIndices: [2] },
+            { word: 'материал', missingIndices: [2] },
+            { word: 'материальный', missingIndices: [2] },
+            { word: 'материализм', missingIndices: [2] },
+            { word: 'материализовать', missingIndices: [2] },
+            { word: 'мгновение', missingIndices: [3] },
+            { word: 'мгновенный', missingIndices: [3] },
+            { word: 'менталитет', missingIndices: [3] },
+            { word: 'ментальный', missingIndices: [3] },
+            { word: 'меридиан', missingIndices: [3] },
+            { word: 'мероприятие', missingIndices: [2] },
+            { word: 'метафора', missingIndices: [3] },
+            { word: 'метафорический', missingIndices: [3] },
+            { word: 'механизм', missingIndices: [2] },
+            { word: 'механический', missingIndices: [2] },
+            { word: 'минерал', missingIndices: [2] },
+            { word: 'минеральный', missingIndices: [2] },
+            { word: 'минор', missingIndices: [2] },
+            { word: 'минорный', missingIndices: [2] },
+            { word: 'монолит', missingIndices: [3] },
+            { word: 'монолитный', missingIndices: [3] },
+            { word: 'мораторий', missingIndices: [3] },
+            { word: 'мотив', missingIndices: [2] },
+            { word: 'мотивировать', missingIndices: [2] },
+            { word: 'мотивация', missingIndices: [2] },
+            { word: 'мятеж', missingIndices: [2] },
+            { word: 'мятежный', missingIndices: [2] },
+            { word: 'наваждение', missingIndices: [3] },
+            { word: 'насекомые', missingIndices: [3] },
+            { word: 'наслаждаться', missingIndices: [2] },
+            { word: 'наслаждение', missingIndices: [2] },
+            { word: 'недосягаемый', missingIndices: [3] },
+            { word: 'новелла', missingIndices: [2] },
+            { word: 'обаяние', missingIndices: [2] },
+            { word: 'обаятельный', missingIndices: [2] },
+            { word: 'обитать', missingIndices: [2] },
+            { word: 'обитатель', missingIndices: [2] },
+            { word: 'обнаружить', missingIndices: [3] },
+            { word: 'обоняние', missingIndices: [3] },
+            { word: 'обонятельный', missingIndices: [3] },
+            { word: 'оборона', missingIndices: [2] },
+            { word: 'оборонять', missingIndices: [2] },
+            { word: 'одолеть', missingIndices: [2] },
+            { word: 'озорной', missingIndices: [2] },
+            { word: 'озорничать', missingIndices: [2] },
+            { word: 'озорник', missingIndices: [2] },
+            { word: 'опекун', missingIndices: [2] },
+            { word: 'опекунский', missingIndices: [2] },
+            { word: 'оптимист', missingIndices: [2] },
+            { word: 'оптимистичный', missingIndices: [2] },
+            { word: 'оптимизм', missingIndices: [2] },
+            { word: 'оранжерея', missingIndices: [3] },
+            { word: 'орбита', missingIndices: [2] },
+            { word: 'орбитальный', missingIndices: [2] },
+            { word: 'организовать', missingIndices: [3] },
+            { word: 'организация', missingIndices: [3] },
+            { word: 'оригинальный', missingIndices: [2] },
+            { word: 'ориентир', missingIndices: [2] },
+            { word: 'ориентировать', missingIndices: [2] },
+            { word: 'ориентироваться', missingIndices: [2] },
+            { word: 'ориентация', missingIndices: [2] },
+            { word: 'орнамент', missingIndices: [2] },
+            { word: 'осторожный', missingIndices: [3] },
+            { word: 'осторожность', missingIndices: [3] },
+            { word: 'офицер', missingIndices: [2] },
+            { word: 'офицерский', missingIndices: [2] },
+            { word: 'ошеломить', missingIndices: [2] },
+            { word: 'ошеломительный', missingIndices: [2] },
+            { word: 'ошеломлённый', missingIndices: [2] },
+            { word: 'палисадник', missingIndices: [3] },
+            { word: 'палитра', missingIndices: [2] },
+            { word: 'панорама', missingIndices: [2] },
+            { word: 'панорамный', missingIndices: [2] },
+            { word: 'панцирь', missingIndices: [2] },
+            { word: 'параграф', missingIndices: [2] },
+            { word: 'парадокс', missingIndices: [2] },
+            { word: 'парадоксальный', missingIndices: [2] },
+            { word: 'парашют', missingIndices: [3] },
+            { word: 'патриот', missingIndices: [3] },
+            { word: 'патриотизм', missingIndices: [3] },
+            { word: 'патриотический', missingIndices: [3] },
+            { word: 'пейзаж', missingIndices: [3] },
+            { word: 'пейзажный', missingIndices: [3] },
+            { word: 'перила', missingIndices: [2] },
+            { word: 'период', missingIndices: [2] },
+            { word: 'периодический', missingIndices: [2] },
+            { word: 'пессимист', missingIndices: [2] },
+            { word: 'пессимистичный', missingIndices: [2] },
+            { word: 'пессимизм', missingIndices: [2] },
+            { word: 'подлинный', missingIndices: [3] },
+            { word: 'подражать', missingIndices: [2] },
+            { word: 'подражание', missingIndices: [2] },
+            { word: 'подражатель', missingIndices: [2] },
+            { word: 'позиция', missingIndices: [2] },
+            { word: 'покой', missingIndices: [2] },
+            { word: 'поколение', missingIndices: [2] },
+            { word: 'полемика', missingIndices: [2] },
+            { word: 'полемичный', missingIndices: [2] },
+            { word: 'полировать', missingIndices: [2] },
+            { word: 'полированный', missingIndices: [2] },
+            { word: 'поражать', missingIndices: [2] },
+            { word: 'поражение', missingIndices: [2] },
+            { word: 'поразить', missingIndices: [2] },
+            { word: 'поразительный', missingIndices: [2] },
+            { word: 'посещать', missingIndices: [2] },
+            { word: 'посещение', missingIndices: [2] },
+            { word: 'посетитель', missingIndices: [2] },
+            { word: 'правило', missingIndices: [2] },
+            { word: 'правильный', missingIndices: [2] },
+            { word: 'предварительный', missingIndices: [3] },
+            { word: 'презентация', missingIndices: [2] },
+            { word: 'президент', missingIndices: [2] },
+            { word: 'президентский', missingIndices: [2] },
+            { word: 'президиум', missingIndices: [2] },
+            { word: 'преобразить', missingIndices: [3] },
+            { word: 'преображение', missingIndices: [3] },
+            { word: 'преобразовать', missingIndices: [3] },
+            { word: 'преобразование', missingIndices: [3] },
+            { word: 'преобразователь', missingIndices: [3] },
+            { word: 'преодолеть', missingIndices: [3] },
+            { word: 'преодоление', missingIndices: [3] },
+            { word: 'прецедент', missingIndices: [2] },
+            { word: 'привилегия', missingIndices: [2] },
+            { word: 'привилегированный', missingIndices: [2] },
+            { word: 'примитивный', missingIndices: [3] },
+            { word: 'приоритет', missingIndices: [3] },
+            { word: 'приоритетный', missingIndices: [3] },
+            { word: 'провинция', missingIndices: [2] },
+            { word: 'провинциальный', missingIndices: [2] },
+            { word: 'провоцировать', missingIndices: [2] },
+            { word: 'проницательный', missingIndices: [3] },
+            { word: 'радиатор', missingIndices: [2] },
+            { word: 'рациональный', missingIndices: [3] },
+            { word: 'рационализировать', missingIndices: [3] },
+            { word: 'реалист', missingIndices: [2] },
+            { word: 'реалистичный', missingIndices: [2] },
+            { word: 'реализм', missingIndices: [2] },
+            { word: 'режиссёр', missingIndices: [3] },
+            { word: 'режиссёрский', missingIndices: [3] },
+            { word: 'резидент', missingIndices: [2] },
+            { word: 'резиденция', missingIndices: [2] },
+            { word: 'ремесло', missingIndices: [2] },
+            { word: 'ремесленный', missingIndices: [2] },
+            { word: 'реставрация', missingIndices: [3] },
+            { word: 'реставрационный', missingIndices: [3] },
+            { word: 'реферат', missingIndices: [2] },
+            { word: 'реферировать', missingIndices: [2] },
+            { word: 'реформа', missingIndices: [2] },
+            { word: 'реформатор', missingIndices: [2] },
+            { word: 'реформировать', missingIndices: [2] },
+            { word: 'рецензия', missingIndices: [2] },
+            { word: 'рецензент', missingIndices: [2] },
+            { word: 'рецензировать', missingIndices: [2] },
+            { word: 'риторика', missingIndices: [2] },
+            { word: 'риторический', missingIndices: [2] },
+            { word: 'ровесники', missingIndices: [2] },
+            { word: 'романтичный', missingIndices: [3] },
+            { word: 'романтический', missingIndices: [3] },
+            { word: 'романтизм', missingIndices: [3] },
+            { word: 'салют', missingIndices: [2] },
+            { word: 'салютовать', missingIndices: [2] },
+            { word: 'сатира', missingIndices: [2] },
+            { word: 'сатирический', missingIndices: [2] },
+            { word: 'сварливый', missingIndices: [2] },
+            { word: 'свидетель', missingIndices: [2] },
+            { word: 'сезон', missingIndices: [2] },
+            { word: 'сезонный', missingIndices: [2] },
+            { word: 'симпатия', missingIndices: [2] },
+            { word: 'симпатичный', missingIndices: [2] },
+            { word: 'симптом', missingIndices: [2] },
+            { word: 'симфония', missingIndices: [2] },
+            { word: 'симфонический', missingIndices: [2] },
+            { word: 'синхронный', missingIndices: [3] },
+            { word: 'сирень', missingIndices: [2] },
+            { word: 'сиреневый', missingIndices: [2] },
+            { word: 'система', missingIndices: [2] },
+            { word: 'систематичный', missingIndices: [2] },
+            { word: 'систематизировать', missingIndices: [2] },
+            { word: 'смятение', missingIndices: [2] },
+            { word: 'снарядить', missingIndices: [2] },
+            { word: 'снаряжение', missingIndices: [2] },
+            { word: 'сокровенный', missingIndices: [3] },
+            { word: 'сонет', missingIndices: [2] },
+            { word: 'сострадать', missingIndices: [3] },
+            { word: 'сострадание', missingIndices: [3] },
+            { word: 'состязаться', missingIndices: [3] },
+            { word: 'состязание', missingIndices: [3] },
+            { word: 'социальный', missingIndices: [3] },
+            { word: 'спартакиада', missingIndices: [3] },
+            { word: 'спокойный', missingIndices: [2] },
+            { word: 'стадион', missingIndices: [2] },
+            { word: 'стипендия', missingIndices: [3] },
+            { word: 'страховать', missingIndices: [3] },
+            { word: 'страховка', missingIndices: [3] },
+            { word: 'стремиться', missingIndices: [3] },
+            { word: 'стремление', missingIndices: [3] },
+            { word: 'суверенитет', missingIndices: [3] },
+            { word: 'суверенный', missingIndices: [3] },
+            { word: 'сувенир', missingIndices: [3] },
+            { word: 'талант', missingIndices: [2] },
+            { word: 'талантливый', missingIndices: [2] },
+            { word: 'теория', missingIndices: [2] },
+            { word: 'теоретический', missingIndices: [2] },
+            { word: 'территория', missingIndices: [2] },
+            { word: 'территориальный', missingIndices: [2] },
+            { word: 'торжество', missingIndices: [2] },
+            { word: 'торжественный', missingIndices: [2] },
+            { word: 'традиция', missingIndices: [3] },
+            { word: 'традиционный', missingIndices: [3] },
+            { word: 'трафарет', missingIndices: [3] },
+            { word: 'трафаретный', missingIndices: [3] },
+            { word: 'тревога', missingIndices: [2] },
+            { word: 'тревожный', missingIndices: [2] },
+            { word: 'тревожить', missingIndices: [2] },
+            { word: 'трамвай', missingIndices: [2] },
+            { word: 'трамвайный', missingIndices: [2] },
+            { word: 'троллейбус', missingIndices: [3] },
+            { word: 'троллейбусный', missingIndices: [3] },
+            { word: 'тростник', missingIndices: [3] },
+            { word: 'тростниковый', missingIndices: [3] },
+            { word: 'тротуар', missingIndices: [3] },
+            { word: 'университет', missingIndices: [2] },
+            { word: 'университетский', missingIndices: [2] },
+            { word: 'уникальный', missingIndices: [3] },
+            { word: 'уничтожить', missingIndices: [3] },
+            { word: 'утрамбовать', missingIndices: [3] },
+            { word: 'фантастика', missingIndices: [3] },
+            { word: 'фантастический', missingIndices: [3] },
+            { word: 'фестиваль', missingIndices: [2] },
+            { word: 'фигура', missingIndices: [2] },
+            { word: 'фигурировать', missingIndices: [2] },
+            { word: 'фигурист', missingIndices: [2] },
+            { word: 'фигуристка', missingIndices: [2] },
+            { word: 'фигурный', missingIndices: [2] },
+            { word: 'финансы', missingIndices: [2] },
+            { word: 'финансовый', missingIndices: [2] },
+            { word: 'фиолетовый', missingIndices: [3] },
+            { word: 'фрагмент', missingIndices: [3] },
+            { word: 'фрагментарный', missingIndices: [3] },
+            { word: 'фразеология', missingIndices: [3] },
+            { word: 'фразеологический', missingIndices: [3] },
+            { word: 'хаос', missingIndices: [2] },
+            { word: 'хаотичный', missingIndices: [2] },
+            { word: 'характер', missingIndices: [2] },
+            { word: 'характерный', missingIndices: [2] },
+            { word: 'характеризовать', missingIndices: [2] },
+            { word: 'цемент', missingIndices: [2] },
+            { word: 'цементный', missingIndices: [2] },
+            { word: 'цивилизация', missingIndices: [3] },
+            { word: 'цивилизационный', missingIndices: [3] },
+            { word: 'цивилизованный', missingIndices: [3] },
+            { word: 'циклон', missingIndices: [2] },
+            { word: 'цилиндр', missingIndices: [3] },
+            { word: 'цилиндрический', missingIndices: [3] },
+            { word: 'цистерна', missingIndices: [3] },
+            { word: 'цитата', missingIndices: [3] },
+            { word: 'цитировать', missingIndices: [3] },
+            { word: 'человек', missingIndices: [2] },
+            { word: 'человеческий', missingIndices: [2] },
+            { word: 'человечный', missingIndices: [2] },
+            { word: 'чемпион', missingIndices: [2] },
+            { word: 'чемпионат', missingIndices: [2] },
+            { word: 'чемпионский', missingIndices: [2] },
+            { word: 'шеренга', missingIndices: [2] },
+            { word: 'шоколад', missingIndices: [2] },
+            { word: 'шоколадный', missingIndices: [2] },
+            { word: 'шоссе', missingIndices: [2] },
+            { word: 'шоссейный', missingIndices: [2] },
+            { word: 'шофёр', missingIndices: [2] },
+            { word: 'шофёрский', missingIndices: [2] },
+            { word: 'эволюция', missingIndices: [3] },
+            { word: 'эволюционировать', missingIndices: [3] },
+            { word: 'экономика', missingIndices: [2] },
+            { word: 'экономический', missingIndices: [2] },
+            { word: 'экономичный', missingIndices: [2] },
+            { word: 'эксперимент', missingIndices: [2] },
+            { word: 'экспериментальный', missingIndices: [2] },
+            { word: 'экспериментировать', missingIndices: [2] },
+            { word: 'экспонат', missingIndices: [2] },
+            { word: 'экстремальный', missingIndices: [2] },
+            { word: 'электроника', missingIndices: [2] },
+            { word: 'электрический', missingIndices: [2] },
+            { word: 'электричество', missingIndices: [2] },
+            { word: 'энциклопедия', missingIndices: [3] },
+            { word: 'энциклопедист', missingIndices: [3] },
+            { word: 'энциклопедический', missingIndices: [3] },
+            { word: 'эстакада', missingIndices: [3] }
+        ];
+
+        let gameWords = [];
+        let currentIndex = 0;
+        let correctAnswers = 0;
+        let incorrectAnswers = 0;
+        let letterStats = {};
+        let wordResults = [];
+        let answered = false;
+        let selectedMode = 20;
+        let isDarkTheme = false;
+        let currentMissingIndices = [];
+        let currentWordIndex = 0;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function toggleTheme() {
+            isDarkTheme = !isDarkTheme;
+            document.body.classList.toggle('dark-theme', isDarkTheme);
+            document.getElementById('themeToggle').textContent = isDarkTheme ? '☀️' : '🌙';
+        }
+
+        function selectMode(btn) {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedMode = parseInt(btn.dataset.mode);
+        }
+
+        function getVowels() {
+            return ['а', 'о', 'у', 'е', 'ё', 'и', 'я', 'ю', 'э'];
+        }
+
+        function startGame() {
+            if (selectedMode === 0) {
+                // All words mode
+                gameWords = shuffleArray([...wordDatabase]);
+            } else {
+                gameWords = shuffleArray([...wordDatabase]).slice(0, selectedMode);
+            }
+
+            // For each word, pick one random vowel position to hide
+            gameWords = gameWords.map(entry => {
+                // Pick one index randomly from the missingIndices
+                const index = entry.missingIndices[Math.floor(Math.random() * entry.missingIndices.length)];
+                return {
+                    word: entry.word,
+                    hideIndex: index,
+                    correctLetter: entry.word[index]
+                };
+            });
+
+            currentIndex = 0;
+            correctAnswers = 0;
+            incorrectAnswers = 0;
+            letterStats = {};
+            wordResults = [];
+            answered = false;
+
+            document.getElementById('totalQuestions').textContent = gameWords.length;
+            document.getElementById('correctCount').textContent = '0';
+            document.getElementById('incorrectCount').textContent = '0';
+
+            document.getElementById('startScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('gameScreen').classList.add('active');
+
+            displayWord();
+        }
+
+        function displayWord() {
+            answered = false;
+            const entry = gameWords[currentIndex];
+            const word = entry.word;
+            const hideIndex = entry.hideIndex;
+
+            // Create display word with underscore
+            let displayWord = word.substring(0, hideIndex) + '_' + word.substring(hideIndex + 1);
+
+            document.getElementById('currentQuestion').textContent = currentIndex + 1;
+            document.getElementById('wordDisplay').innerHTML = displayWord.replace('_', '<span class="missing-letter">_</span>');
+            document.getElementById('letterInput').value = '';
+            document.getElementById('letterInput').className = '';
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('submitBtn').style.display = 'block';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('letterInput').disabled = false;
+            document.getElementById('letterInput').focus();
+
+            // Update progress bar
+            const progress = ((currentIndex) / gameWords.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            // Store correct answer
+            document.getElementById('submitBtn').dataset.correctLetter = entry.correctLetter;
+            document.getElementById('submitBtn').dataset.fullWord = word;
+            document.getElementById('submitBtn').dataset.hideIndex = hideIndex;
+        }
+
+        function checkAnswer() {
+            if (answered) return;
+            
+            const input = document.getElementById('letterInput');
+            const userAnswer = input.value.toLowerCase().trim();
+            const correctLetter = document.getElementById('submitBtn').dataset.correctLetter.toLowerCase();
+            const fullWord = document.getElementById('submitBtn').dataset.fullWord;
+
+            if (!userAnswer) {
+                input.classList.add('shake');
+                setTimeout(() => input.classList.remove('shake'), 300);
+                return;
+            }
+
+            answered = true;
+            const isCorrect = userAnswer === correctLetter;
+
+            // Update stats
+            if (!letterStats[correctLetter]) {
+                letterStats[correctLetter] = { total: 0, correct: 0 };
+            }
+            letterStats[correctLetter].total++;
+
+            if (isCorrect) {
+                letterStats[correctLetter].correct++;
+                correctAnswers++;
+                input.className = 'correct pulse';
+                document.getElementById('feedback').textContent = '✅ Правильно!';
+                document.getElementById('feedback').className = 'feedback correct';
+            } else {
+                incorrectAnswers++;
+                input.className = 'incorrect shake';
+                document.getElementById('feedback').textContent = '❌ Неправильно! Правильный ответ: ' + correctLetter.toUpperCase();
+                document.getElementById('feedback').className = 'feedback incorrect';
+            }
+
+            // Store word result
+            wordResults.push({
+                word: fullWord,
+                correctLetter: correctLetter,
+                userAnswer: userAnswer,
+                isCorrect: isCorrect
+            });
+
+            // Update counters
+            document.getElementById('correctCount').textContent = correctAnswers;
+            document.getElementById('incorrectCount').textContent = incorrectAnswers;
+
+            // Disable input and show next button
+            input.disabled = true;
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'block';
+        }
+
+        function nextWord() {
+            currentIndex++;
+            if (currentIndex >= gameWords.length) {
+                showResults();
+            } else {
+                displayWord();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('gameScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.add('active');
+
+            const percentage = Math.round((correctAnswers / gameWords.length) * 100);
+            
+            // Set emoji and message based on score
+            let emoji, message;
+            if (percentage >= 90) {
+                emoji = '🏆';
+                message = 'Отлично! Вы прекрасно знаете словарные слова!';
+            } else if (percentage >= 70) {
+                emoji = '👍';
+                message = 'Хороший результат! Есть над чем поработать.';
+            } else if (percentage >= 50) {
+                emoji = '📚';
+                message = 'Неплохо, но стоит подучить некоторые слова.';
+            } else {
+                emoji = '💪';
+                message = 'Нужно больше практики. Не сдавайтесь!';
+            }
+
+            document.getElementById('resultEmoji').textContent = emoji;
+            document.getElementById('finalScore').textContent = correctAnswers + '/' + gameWords.length + ' (' + percentage + '%)';
+            document.getElementById('resultMessage').textContent = message;
+
+            // Show problem letters
+            const problemLettersList = document.getElementById('problemLettersList');
+            const letterStatsDiv = document.getElementById('letterStats');
+            problemLettersList.innerHTML = '';
+            letterStatsDiv.innerHTML = '';
+
+            const problemLetters = [];
+            for (const [letter, stats] of Object.entries(letterStats)) {
+                const accuracy = stats.correct / stats.total;
+                if (accuracy < 1) {
+                    problemLetters.push({ letter, accuracy, stats });
+                }
+            }
+
+            // Sort by accuracy (worst first)
+            problemLetters.sort((a, b) => a.accuracy - b.accuracy);
+
+            if (problemLetters.length === 0) {
+                problemLettersList.innerHTML = '<p style="color: #4caf50;">🎉 Все ответы правильные!</p>';
+            } else {
+                problemLetters.forEach(item => {
+                    const severity = item.accuracy < 0.5 ? 'severe' : 'mild';
+                    const div = document.createElement('span');
+                    div.className = 'problem-letter ' + severity;
+                    div.textContent = item.letter.toUpperCase() + ' (' + item.stats.correct + '/' + item.stats.total + ')';
+                    problemLettersList.appendChild(div);
+                });
+            }
+
+            // Show detailed letter stats
+            for (const [letter, stats] of Object.entries(letterStats).sort((a, b) => (b[1].correct / b[1].total) - (a[1].correct / a[1].total))) {
+                const accuracy = Math.round((stats.correct / stats.total) * 100);
+                const div = document.createElement('div');
+                div.className = 'stat-row';
+                div.innerHTML = '<span class="stat-letter">' + letter.toUpperCase() + '</span><span class="stat-value">' + stats.correct + '/' + stats.total + ' (' + accuracy + '%)</span>';
+                letterStatsDiv.appendChild(div);
+            }
+
+            // Show word results
+            const wordListDiv = document.getElementById('wordList');
+            wordListDiv.innerHTML = '';
+            wordResults.forEach(result => {
+                const div = document.createElement('div');
+                div.className = 'word-item ' + (result.isCorrect ? 'correct' : 'incorrect');
+                const highlightWord = result.word.split('');
+                const hideIdx = parseInt(document.getElementById('submitBtn').dataset.hideIndex);
+                div.innerHTML = '<span><strong>' + result.word + '</strong></span><span>' + 
+                    (result.isCorrect ? '✅' : '❌ Ваш ответ: ' + result.userAnswer.toUpperCase() + ', Правильно: ' + result.correctLetter.toUpperCase()) + '</span>';
+                wordListDiv.appendChild(div);
+            });
+        }
+
+        function restartGame() {
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('startScreen').classList.add('active');
+        }
+
+        // Handle Enter key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                if (document.getElementById('gameScreen').classList.contains('active')) {
+                    if (!answered) {
+                        checkAnswer();
+                    } else {
+                        nextWord();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
