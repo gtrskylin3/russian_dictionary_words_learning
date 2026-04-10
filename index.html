@@ -84,6 +84,8 @@
             align-items: center;
             padding: 20px;
             transition: background 0.3s;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
         }
 
         .container {
@@ -94,6 +96,7 @@
             width: 100%;
             padding: 40px;
             transition: background 0.3s, box-shadow 0.3s;
+            overflow-x: hidden;
         }
 
         .header {
@@ -436,24 +439,375 @@
             color: var(--text-secondary);
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+                padding-top: 60px;
+            }
+
             .container {
                 padding: 20px;
+                border-radius: 15px;
+                max-width: 100%;
             }
 
             h1 {
                 font-size: 1.5em;
+                margin-bottom: 8px;
             }
 
+            .subtitle {
+                font-size: 0.95em;
+                margin-bottom: 20px;
+            }
+
+            .theme-toggle {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3em;
+                top: 10px;
+                right: 10px;
+            }
+
+            .emoji {
+                font-size: 3em;
+                margin: 15px 0;
+            }
+
+            /* Mode selection responsive */
+            .mode-selection {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .mode-btn {
+                min-width: 100%;
+                padding: 15px 20px;
+                margin: 0;
+            }
+
+            /* Word display responsive */
             .word-display {
-                font-size: 2em;
-                margin: 30px 0;
+                font-size: 1.8em;
+                margin: 25px 0;
+                letter-spacing: 3px;
+                word-break: break-word;
+            }
+
+            /* Input responsive */
+            .input-group {
+                margin: 20px 0;
+            }
+
+            .input-group label {
+                font-size: 1em;
+                margin-bottom: 8px;
+            }
+
+            .input-group input {
+                font-size: 1.8em;
+                padding: 15px;
+                -webkit-appearance: none;
+                -moz-appearance: textfield;
+                appearance: none;
+            }
+
+            /* Button responsive */
+            .btn {
+                padding: 14px 30px;
+                font-size: 1.1em;
+                margin: 15px auto;
+                width: 100%;
+                max-width: 100%;
+                min-height: 48px;
+                touch-action: manipulation;
+            }
+
+            /* Stats responsive */
+            .stats {
+                font-size: 0.9em;
+                margin-bottom: 15px;
+                flex-wrap: wrap;
+                gap: 8px;
+                justify-content: center;
+            }
+
+            .progress-bar {
+                height: 18px;
+                margin-bottom: 15px;
+            }
+
+            /* Feedback responsive */
+            .feedback {
+                font-size: 1.1em;
+                margin-top: 10px;
+                min-height: 30px;
+            }
+
+            /* Results responsive */
+            .results-summary {
+                margin-bottom: 20px;
+            }
+
+            .score {
+                font-size: 2.5em;
+                margin: 15px 0;
+            }
+
+            .result-message {
+                font-size: 1em;
+            }
+
+            /* Word list responsive */
+            .word-list {
+                max-height: 250px;
+                margin-top: 15px;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .word-item {
+                padding: 12px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .word-item span:first-child {
+                font-size: 1.1em;
+            }
+
+            .word-item span:last-child {
+                font-size: 0.9em;
+            }
+
+            /* Section responsive */
+            .section {
+                padding: 15px;
+                margin: 15px 0;
+            }
+
+            .section h3 {
+                font-size: 1.1em;
+                margin-bottom: 10px;
+            }
+
+            /* Problem letter responsive */
+            .problem-letter {
+                padding: 8px 12px;
+                font-size: 1em;
+                margin: 3px;
+            }
+
+            /* Practice button responsive */
+            #practiceErrorsStartBtn {
+                width: 100%;
+                max-width: 100%;
+                font-size: 1.1em;
+                padding: 14px 20px;
+                margin-bottom: 15px;
+                min-height: 48px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+                padding-top: 55px;
+            }
+
+            .container {
+                padding: 15px;
+                border-radius: 10px;
+            }
+
+            h1 {
+                font-size: 1.3em;
+            }
+
+            .subtitle {
+                font-size: 0.9em;
+                margin-bottom: 15px;
             }
 
             .theme-toggle {
                 width: 40px;
                 height: 40px;
-                font-size: 1.2em;
+                font-size: 1.1em;
+                top: 8px;
+                right: 8px;
+            }
+
+            .emoji {
+                font-size: 2.5em;
+                margin: 10px 0;
+            }
+
+            /* Word display smaller */
+            .word-display {
+                font-size: 1.5em;
+                margin: 20px 0;
+                letter-spacing: 2px;
+            }
+
+            /* Input smaller */
+            .input-group {
+                margin: 15px 0;
+            }
+
+            .input-group label {
+                font-size: 0.95em;
+            }
+
+            .input-group input {
+                font-size: 1.6em;
+                padding: 12px;
+            }
+
+            /* Button smaller */
+            .btn {
+                padding: 12px 25px;
+                font-size: 1em;
+                margin: 12px auto;
+                min-height: 44px;
+            }
+
+            /* Stats smaller */
+            .stats {
+                font-size: 0.85em;
+                margin-bottom: 10px;
+                gap: 5px;
+            }
+
+            .progress-bar {
+                height: 14px;
+                margin-bottom: 10px;
+            }
+
+            /* Feedback smaller */
+            .feedback {
+                font-size: 1em;
+                margin-top: 8px;
+            }
+
+            /* Results smaller */
+            .score {
+                font-size: 2em;
+                margin: 10px 0;
+            }
+
+            .result-message {
+                font-size: 0.9em;
+            }
+
+            /* Word list smaller */
+            .word-list {
+                max-height: 200px;
+                margin-top: 10px;
+            }
+
+            .word-item {
+                padding: 10px;
+                gap: 5px;
+            }
+
+            .word-item span:first-child {
+                font-size: 1em;
+            }
+
+            .word-item span:last-child {
+                font-size: 0.85em;
+            }
+
+            /* Section smaller */
+            .section {
+                padding: 12px;
+                margin: 10px 0;
+            }
+
+            .section h3 {
+                font-size: 1em;
+                margin-bottom: 8px;
+            }
+
+            /* Mode button smaller */
+            .mode-btn {
+                padding: 12px 15px;
+                min-height: 44px;
+            }
+
+            .mode-btn-title {
+                font-size: 1.1em;
+            }
+
+            .mode-btn-desc {
+                font-size: 0.85em;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .btn {
+                min-height: 44px;
+            }
+
+            .btn:active {
+                transform: translateY(0);
+                opacity: 0.9;
+            }
+
+            .mode-btn:active {
+                transform: translateY(0);
+                opacity: 0.9;
+            }
+
+            .theme-toggle:active {
+                transform: scale(0.95);
+            }
+
+            .input-group input {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            /* Improve scrolling on mobile */
+            .word-list {
+                -webkit-overflow-scrolling: touch;
+                touch-action: pan-y;
+            }
+
+            /* Prevent text selection on buttons */
+            .btn,
+            .mode-btn,
+            .theme-toggle {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+        }
+
+        /* Safe area padding for devices with notches */
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(20px, env(safe-area-inset-left));
+                padding-right: max(20px, env(safe-area-inset-right));
+            }
+
+            @media (max-width: 768px) {
+                body {
+                    padding-left: max(10px, env(safe-area-inset-left));
+                    padding-right: max(10px, env(safe-area-inset-right));
+                    padding-top: max(60px, env(safe-area-inset-top) + 10px);
+                }
+            }
+
+            @media (max-width: 480px) {
+                body {
+                    padding-left: max(5px, env(safe-area-inset-left));
+                    padding-right: max(5px, env(safe-area-inset-right));
+                    padding-top: max(55px, env(safe-area-inset-top) + 5px);
+                }
             }
         }
     </style>
@@ -769,7 +1123,7 @@
             } else {
                 incorrectAnswers++;
                 input.className = 'incorrect shake';
-                document.getElementById('feedback').textContent = '❌ Неправильно! Правильный ответ: ' + correctLetter.toUpperCase();
+                document.getElementById('feedback').textContent = '❌ Неправильно! Правильный ответ: ' + fullWord.toUpperCase();
                 document.getElementById('feedback').className = 'feedback incorrect';
                 
                 // Track error in history
