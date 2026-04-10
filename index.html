@@ -458,11 +458,11 @@
         }
     </style>
 </head>
-<body>
-    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+<body class="dark-theme">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
 
     <div class="container">
-        <h1>📚 Словарный тренажёр</h1>
+        <h1>📚 Егэ 9 задание тренажёр</h1>
         <p class="subtitle">Тест на знание гласных в словарных словах</p>
 
         <div class="start-screen active" id="startScreen">
@@ -471,7 +471,9 @@
                 Вставьте пропущенную гласную букву в слово.<br>
                 Система определит ваши слабые места!
             </p>
-            
+
+            <button class="btn" id="practiceErrorsStartBtn" onclick="startPracticeErrors()" style="display: none; margin-bottom: 20px;">🔄 Отработать ошибки</button>
+
             <p style="text-align: center; color: var(--text-secondary); margin-bottom: 10px; font-weight: bold; transition: color 0.3s;">
                 Выберите режим:
             </p>
@@ -525,22 +527,6 @@
                 <div class="score" id="finalScore"></div>
                 <p class="result-message" id="resultMessage"></p>
             </div>
-
-            <div class="section" id="problemLettersSection">
-                <h3>⚠️ Проблемные буквы:</h3>
-                <div id="problemLettersList"></div>
-            </div>
-
-            <div class="section">
-                <h3>📊 Статистика по буквам:</h3>
-                <div id="letterStats"></div>
-            </div>
-
-            <div>
-                <h3 style="margin: 20px 0 10px 0; color: var(--text-primary); transition: color 0.3s;">📝 Подробные результаты:</h3>
-                <div class="word-list" id="wordList"></div>
-            </div>
-
             <button class="btn" onclick="restartGame()">Пройти ещё раз</button>
         </div>
     </div>
@@ -598,6 +584,32 @@
         let isDarkTheme = false;
         let currentMissingIndices = [];
         let currentWordIndex = 0;
+        let errorHistory = []; // Track all errors across sessions
+
+        // Load error history from localStorage
+        function loadErrorHistory() {
+            try {
+                const saved = localStorage.getItem('wordLearningErrors');
+                if (saved) {
+                    errorHistory = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error('Failed to load error history:', e);
+                errorHistory = [];
+            }
+        }
+
+        // Save error history to localStorage
+        function saveErrorHistory() {
+            try {
+                localStorage.setItem('wordLearningErrors', JSON.stringify(errorHistory));
+            } catch (e) {
+                console.error('Failed to save error history:', e);
+            }
+        }
+
+        // Load error history on startup
+        loadErrorHistory();
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -608,9 +620,15 @@
         }
 
         function toggleTheme() {
-            isDarkTheme = !isDarkTheme;
-            document.body.classList.toggle('dark-theme', isDarkTheme);
-            document.getElementById('themeToggle').textContent = isDarkTheme ? '☀️' : '🌙';
+            isDarkTheme = isDarkTheme;
+            if (isDarkTheme){
+                document.body.classList.toggle('');
+                document.getElementById('themeToggle').textContent = '🌙';
+            }
+            else{
+                document.body.classList.toggle('dark-theme');
+                document.getElementById('themeToggle').textContent = '☀️';
+            }
         }
 
         function selectMode(btn) {
@@ -640,6 +658,9 @@
                 alert('Не удалось загрузить словарь. Проверьте наличие файла check_spell_data.txt');
                 return;
             }
+
+            // Set flag to indicate we're in normal game mode (not error practice)
+            window.isErrorPracticeMode = false;
             
             if (selectedMode === 0) {
                 // All words mode
@@ -736,11 +757,41 @@
                 input.className = 'correct pulse';
                 document.getElementById('feedback').textContent = '✅ Правильно!';
                 document.getElementById('feedback').className = 'feedback correct';
+                
+                // If in error practice mode and answered correctly, remove from error history
+                if (window.isErrorPracticeMode) {
+                    const errorIndex = errorHistory.findIndex(e => e.word === fullWord);
+                    if (errorIndex >= 0) {
+                        errorHistory.splice(errorIndex, 1);
+                        saveErrorHistory();
+                    }
+                }
             } else {
                 incorrectAnswers++;
                 input.className = 'incorrect shake';
                 document.getElementById('feedback').textContent = '❌ Неправильно! Правильный ответ: ' + correctLetter.toUpperCase();
                 document.getElementById('feedback').className = 'feedback incorrect';
+                
+                // Track error in history
+                const errorEntry = {
+                    word: fullWord,
+                    correctLetter: correctLetter,
+                    userAnswer: userAnswer,
+                    timestamp: Date.now()
+                };
+                
+                // Check if this word already exists in error history
+                const existingIndex = errorHistory.findIndex(e => e.word === fullWord);
+                if (existingIndex >= 0) {
+                    // Update existing entry
+                    errorHistory[existingIndex].count = (errorHistory[existingIndex].count || 1) + 1;
+                    errorHistory[existingIndex].lastError = Date.now();
+                } else {
+                    // Add new entry
+                    errorEntry.count = 1;
+                    errorHistory.push(errorEntry);
+                }
+                saveErrorHistory();
             }
 
             // Store word result
@@ -775,7 +826,7 @@
             document.getElementById('resultScreen').classList.add('active');
 
             const percentage = Math.round((correctAnswers / gameWords.length) * 100);
-            
+
             // Set emoji and message based on score
             let emoji, message;
             if (percentage >= 90) {
@@ -796,62 +847,88 @@
             document.getElementById('finalScore').textContent = correctAnswers + '/' + gameWords.length + ' (' + percentage + '%)';
             document.getElementById('resultMessage').textContent = message;
 
-            // Show problem letters
-            const problemLettersList = document.getElementById('problemLettersList');
-            const letterStatsDiv = document.getElementById('letterStats');
-            problemLettersList.innerHTML = '';
-            letterStatsDiv.innerHTML = '';
-
-            const problemLetters = [];
-            for (const [letter, stats] of Object.entries(letterStats)) {
-                const accuracy = stats.correct / stats.total;
-                if (accuracy < 1) {
-                    problemLetters.push({ letter, accuracy, stats });
-                }
-            }
-
-            // Sort by accuracy (worst first)
-            problemLetters.sort((a, b) => a.accuracy - b.accuracy);
-
-            if (problemLetters.length === 0) {
-                problemLettersList.innerHTML = '<p style="color: #4caf50;">🎉 Все ответы правильные!</p>';
-            } else {
-                problemLetters.forEach(item => {
-                    const severity = item.accuracy < 0.5 ? 'severe' : 'mild';
-                    const div = document.createElement('span');
-                    div.className = 'problem-letter ' + severity;
-                    div.textContent = item.letter.toUpperCase() + ' (' + item.stats.correct + '/' + item.stats.total + ')';
-                    problemLettersList.appendChild(div);
-                });
-            }
-
-            // Show detailed letter stats
-            for (const [letter, stats] of Object.entries(letterStats).sort((a, b) => (b[1].correct / b[1].total) - (a[1].correct / a[1].total))) {
-                const accuracy = Math.round((stats.correct / stats.total) * 100);
-                const div = document.createElement('div');
-                div.className = 'stat-row';
-                div.innerHTML = '<span class="stat-letter">' + letter.toUpperCase() + '</span><span class="stat-value">' + stats.correct + '/' + stats.total + ' (' + accuracy + '%)</span>';
-                letterStatsDiv.appendChild(div);
-            }
-
             // Show word results
             const wordListDiv = document.getElementById('wordList');
             wordListDiv.innerHTML = '';
             wordResults.forEach(result => {
                 const div = document.createElement('div');
                 div.className = 'word-item ' + (result.isCorrect ? 'correct' : 'incorrect');
-                const highlightWord = result.word.split('');
-                const hideIdx = parseInt(document.getElementById('submitBtn').dataset.hideIndex);
-                div.innerHTML = '<span><strong>' + result.word + '</strong></span><span>' + 
+                div.innerHTML = '<span><strong>' + result.word + '</strong></span><span>' +
                     (result.isCorrect ? '✅' : '❌ Ваш ответ: ' + result.userAnswer.toUpperCase() + ', Правильно: ' + result.correctLetter.toUpperCase()) + '</span>';
                 wordListDiv.appendChild(div);
             });
+
+            // Update the practice errors button visibility on start screen
+            updatePracticeErrorsButton();
         }
 
         function restartGame() {
             document.getElementById('resultScreen').classList.remove('active');
             document.getElementById('startScreen').classList.add('active');
+            updatePracticeErrorsButton();
         }
+
+        // Update the visibility of the practice errors button on start screen
+        function updatePracticeErrorsButton() {
+            const practiceBtn = document.getElementById('practiceErrorsStartBtn');
+            if (errorHistory.length > 0) {
+                practiceBtn.style.display = 'block';
+                practiceBtn.textContent = '🔄 Отработать ошибки (' + errorHistory.length + ')';
+            } else {
+                practiceBtn.style.display = 'none';
+            }
+        }
+
+        // Start practicing only error words
+        function startPracticeErrors() {
+            if (errorHistory.length === 0) {
+                alert('Нет ошибок для отработки!');
+                return;
+            }
+
+            // Create game words from error history
+            gameWords = errorHistory.map(error => {
+                // Find the word in the database
+                const dbEntry = wordDatabase.find(w => w.word === error.word);
+                if (dbEntry) {
+                    return {
+                        word: dbEntry.word,
+                        hideIndex: dbEntry.missingIndices[Math.floor(Math.random() * dbEntry.missingIndices.length)],
+                        correctLetter: dbEntry.word[dbEntry.missingIndices[Math.floor(Math.random() * dbEntry.missingIndices.length)]]
+                    };
+                }
+                return null;
+            }).filter(w => w !== null);
+
+            if (gameWords.length === 0) {
+                alert('Не удалось найти слова для отработки');
+                return;
+            }
+
+            // Shuffle
+            gameWords = shuffleArray(gameWords);
+
+            currentIndex = 0;
+            correctAnswers = 0;
+            incorrectAnswers = 0;
+            letterStats = {};
+            wordResults = [];
+            answered = false;
+            window.isErrorPracticeMode = true;
+
+            document.getElementById('totalQuestions').textContent = gameWords.length;
+            document.getElementById('correctCount').textContent = '0';
+            document.getElementById('incorrectCount').textContent = '0';
+
+            document.getElementById('startScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('gameScreen').classList.add('active');
+
+            displayWord();
+        }
+
+        // Update practice button when page loads
+        updatePracticeErrorsButton();
 
         // Handle Enter key
         document.addEventListener('keydown', function(e) {
