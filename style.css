@@ -107,6 +107,11 @@ h1 {
     transition: color 0.3s;
 }
 
+h2 {
+    color: var(--text-primary);
+    transition: color 0.3s;
+}
+
 .subtitle {
     text-align: center;
     color: var(--text-secondary);
