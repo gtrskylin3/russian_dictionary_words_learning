@@ -202,7 +202,7 @@
         .word-display {
             text-align: center;
             font-size: 2.5em;
-            margin: 40px 0;
+            margin: 40px 0 10px 0;
             letter-spacing: 5px;
             color: var(--text-primary);
             font-weight: bold;
@@ -212,6 +212,34 @@
         .word-display .missing-letter {
             color: var(--feedback-incorrect);
             border-bottom: 3px solid var(--feedback-incorrect);
+        }
+
+        .word-hint {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            min-height: 30px;
+            font-style: italic;
+            transition: color 0.3s;
+        }
+
+        .layout-warning {
+            text-align: center;
+            color: #ff9800;
+            font-size: 1em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            min-height: 25px;
+            opacity: 0;
+            transform: translateY(-5px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+
+        .layout-warning.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .input-group {
@@ -490,9 +518,19 @@
             /* Word display responsive */
             .word-display {
                 font-size: 1.8em;
-                margin: 25px 0;
+                margin: 25px 0 10px 0;
                 letter-spacing: 3px;
                 word-break: break-word;
+            }
+
+            .word-hint {
+                font-size: 1em;
+                margin-bottom: 15px;
+            }
+
+            .layout-warning {
+                font-size: 0.95em;
+                margin-bottom: 12px;
             }
 
             /* Input responsive */
@@ -646,8 +684,13 @@
             /* Word display smaller */
             .word-display {
                 font-size: 1.5em;
-                margin: 20px 0;
+                margin: 20px 0 8px 0;
                 letter-spacing: 2px;
+            }
+
+            .word-hint {
+                font-size: 0.95em;
+                margin-bottom: 12px;
             }
 
             /* Input smaller */
@@ -816,7 +859,7 @@
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
 
     <div class="container">
-        <h1>📚 Егэ 9 задание тренажёр</h1>
+        <h1>📚 ЕГЭ 9 задание тренажёр</h1>
         <p class="subtitle">Тест на знание гласных в словарных словах</p>
 
         <div class="start-screen active" id="startScreen">
@@ -862,11 +905,14 @@
             </div>
             
             <div class="word-display" id="wordDisplay"></div>
+            <div class="word-hint" id="wordHint"></div>
 
             <div class="input-group">
                 <label for="letterInput">Вставьте пропущенную гласную букву:</label>
                 <input type="text" id="letterInput" maxlength="1" autocomplete="off">
             </div>
+
+            <div class="layout-warning" id="layoutWarning">⚠️ Переключите раскладку на русскую!</div>
 
             <div class="feedback" id="feedback"></div>
 
@@ -901,10 +947,18 @@
                 const lines = text.split('\n').filter(line => line.trim() !== '');
 
                 wordDatabase = lines.map(line => {
-                    const [correctWord, pattern] = line.split('=');
+                    const [correctWord, patternWithHint] = line.split('=');
                     const trimmedWord = correctWord.trim();
-                    const trimmedPattern = pattern.trim();
-                    
+                    let trimmedPattern = patternWithHint.trim();
+                    let hint = '';
+
+                    // Check if pattern contains hint in parentheses
+                    const hintMatch = trimmedPattern.match(/^(.+?)\s*\((.+?)\)$/);
+                    if (hintMatch) {
+                        trimmedPattern = hintMatch[1].trim();
+                        hint = hintMatch[2].trim();
+                    }
+
                     // Find indices where underscores are in the pattern
                     // These indices correspond to the correct word
                     const missingIndices = [];
@@ -913,19 +967,21 @@
                             missingIndices.push(i);
                         }
                     }
-                    
+
                     // Debug: verify lengths match
                     if (trimmedWord.length !== trimmedPattern.length) {
                         console.warn(`Length mismatch for "${trimmedWord}": word length=${trimmedWord.length}, pattern length=${trimmedPattern.length}`);
                     }
-                    
+
                     return {
                         word: trimmedWord,
-                        missingIndices: missingIndices
+                        missingIndices: missingIndices,
+                        hint: hint
                     };
                 });
 
                 console.log('Loaded', wordDatabase.length, 'words from check_spell_data.txt');
+                console.log('Words with hints:', wordDatabase.filter(w => w.hint).length);
             } catch (error) {
                 console.error('Error loading word database:', error);
                 // Fallback to empty database if file can't be loaded
@@ -1040,7 +1096,8 @@
                 return {
                     word: entry.word,
                     hideIndex: index,
-                    correctLetter: entry.word[index]
+                    correctLetter: entry.word[index],
+                    hint: entry.hint || ''
                 };
             });
 
@@ -1067,12 +1124,22 @@
             const entry = gameWords[currentIndex];
             const word = entry.word;
             const hideIndex = entry.hideIndex;
+            const hint = entry.hint;
 
             // Create display word with underscore
             let displayWord = word.substring(0, hideIndex) + '_' + word.substring(hideIndex + 1);
 
             document.getElementById('currentQuestion').textContent = currentIndex + 1;
             document.getElementById('wordDisplay').innerHTML = displayWord.replace('_', '<span class="missing-letter">_</span>');
+            
+            // Show hint if available
+            const hintElement = document.getElementById('wordHint');
+            if (hint) {
+                hintElement.textContent = '(' + hint + ')';
+            } else {
+                hintElement.textContent = '';
+            }
+            
             document.getElementById('letterInput').value = '';
             document.getElementById('letterInput').className = '';
             document.getElementById('feedback').textContent = '';
@@ -1257,10 +1324,13 @@
 
             // Create game words from error history using the SPECIFIC hideIndex that was wrong
             gameWords = errorHistory.map(error => {
+                // Find hint from database
+                const dbEntry = wordDatabase.find(w => w.word === error.word);
                 return {
                     word: error.word,
                     hideIndex: error.hideIndex,
-                    correctLetter: error.word[error.hideIndex]
+                    correctLetter: error.word[error.hideIndex],
+                    hint: dbEntry ? dbEntry.hint : ''
                 };
             });
 
@@ -1293,6 +1363,39 @@
 
         // Update practice button when page loads
         updatePracticeErrorsButton();
+
+        // Detect English layout and show warning
+        const letterInputEl = document.getElementById('letterInput');
+        const layoutWarningEl = document.getElementById('layoutWarning');
+        
+        if (letterInputEl && layoutWarningEl) {
+            letterInputEl.addEventListener('input', function() {
+                const value = this.value;
+                if (!value) {
+                    layoutWarningEl.classList.remove('visible');
+                    return;
+                }
+
+                // Check if the character is a Latin letter (English layout)
+                const isLatinLetter = /[a-zA-Z]/.test(value);
+                
+                if (isLatinLetter) {
+                    layoutWarningEl.classList.add('visible');
+                } else {
+                    layoutWarningEl.classList.remove('visible');
+                }
+            });
+
+            letterInputEl.addEventListener('focus', function() {
+                // Clear warning when input gains focus
+                layoutWarningEl.classList.remove('visible');
+            });
+
+            letterInputEl.addEventListener('blur', function() {
+                // Clear warning when input loses focus
+                layoutWarningEl.classList.remove('visible');
+            });
+        }
 
         // Handle Enter key
         document.addEventListener('keydown', function(e) {
