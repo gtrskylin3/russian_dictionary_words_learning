@@ -492,6 +492,15 @@ h2 {
     color: #ffffff;
 }
 
+/* Word display wrapper for centering */
+.word-display-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+}
+
 /* Vowel buttons inline in word */
 .word-display {
     text-align: center;
@@ -505,8 +514,10 @@ h2 {
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
+    align-content: flex-start;
     gap: 2px;
-    line-height: 1.4;
+    line-height: 1.15;
+    padding: 10px 0;
 }
 
 .consonant-char {
@@ -517,26 +528,26 @@ h2 {
 
 .vowel-btn-inline {
     display: inline-block;
-    background: var(--vowel-btn-bg);
+    background: #ffffff;
     border: 2px solid var(--vowel-btn-border);
-    color: var(--vowel-btn-border);
+    color: var(--text-primary);
     font-size: 1em;
     font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 6px;
+    padding: 8px 12px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s;
     font-family: inherit;
     line-height: 1.2;
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 64px;
+    min-width: 64px;
 }
 
 .vowel-btn-inline:hover:not(:disabled) {
     background: var(--vowel-btn-hover);
     color: #ffffff;
     border-color: var(--vowel-btn-hover);
-    transform: scale(1.1);
+    transform: scale(1.15);
 }
 
 .vowel-btn-inline:disabled {
@@ -562,6 +573,12 @@ h2 {
     border-color: var(--input-incorrect-border);
     color: var(--feedback-incorrect);
     animation: shake 0.3s;
+}
+
+/* Dark theme vowel buttons */
+body.dark-theme .vowel-btn-inline {
+    background: #2a2a3e;
+    color: #e0e0e0;
 }
 
 @keyframes shake {
@@ -631,12 +648,24 @@ h2 {
         padding: 10px;
         align-items: flex-start;
         padding-top: 60px;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
 
     .container {
         padding: 20px;
         border-radius: 15px;
         max-width: 100%;
+        min-height: calc(100vh - 80px);
+        min-height: calc(100dvh - 80px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .game-screen.active {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
     }
 
     h1 {
@@ -697,10 +726,10 @@ h2 {
 
     /* Vowel buttons inline responsive */
     .vowel-btn-inline {
-        font-size: 0.8em;
-        padding: 2px 4px;
-        min-height: 40px;
-        min-width: 40px;
+        font-size: 0.9em;
+        padding: 6px 10px;
+        min-height: 52px;
+        min-width: 52px;
     }
 
     .consonant-char {
@@ -721,10 +750,31 @@ h2 {
 
     /* Word display responsive */
     .word-display {
-        font-size: 1.8em;
-        margin: 25px 0 10px 0;
-        letter-spacing: 3px;
-        word-break: break-word;
+        font-size: 2.2em;
+        margin: 0;
+        letter-spacing: 2px;
+        padding: 5px 5px;
+        line-height: 1.15;
+        gap: 2px;
+    }
+
+    .word-display-wrapper {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 0;
+    }
+
+    .vowel-btn-inline {
+        font-size: 0.8em;
+        padding: 4px 6px;
+        min-height: 48px;
+        min-width: 48px;
+    }
+
+    .consonant-char {
+        font-size: 1em;
     }
 
     .word-hint {
@@ -856,11 +906,23 @@ h2 {
     body {
         padding: 5px;
         padding-top: 55px;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
 
     .container {
         padding: 15px;
         border-radius: 10px;
+        min-height: calc(100vh - 65px);
+        min-height: calc(100dvh - 65px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .game-screen.active {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
     }
 
     h1 {
@@ -887,9 +949,31 @@ h2 {
 
     /* Word display smaller */
     .word-display {
-        font-size: 1.5em;
-        margin: 20px 0 8px 0;
-        letter-spacing: 2px;
+        font-size: 1.8em;
+        margin: 0;
+        letter-spacing: 1px;
+        padding: 5px 5px;
+        line-height: 1.15;
+        gap: 2px;
+    }
+
+    .word-display-wrapper {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 0;
+    }
+
+    .vowel-btn-inline {
+        font-size: 0.8em;
+        padding: 4px 6px;
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .consonant-char {
+        font-size: 1em;
     }
 
     .word-hint {
