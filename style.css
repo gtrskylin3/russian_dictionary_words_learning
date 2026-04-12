@@ -34,6 +34,14 @@
     --problem-severe-color: #f44336;
     --stats-bg: #f5f5f5;
     --shadow: rgba(0, 0, 0, 0.3);
+    --trainer-card-bg: #f8f9fa;
+    --trainer-card-border: #e0e0e0;
+    --trainer-card-hover: #667eea;
+    --vowel-btn-bg: #e8eaf6;
+    --vowel-btn-border: #667eea;
+    --vowel-btn-hover: #764ba2;
+    --back-btn-bg: rgba(102, 126, 234, 0.1);
+    --back-btn-color: #667eea;
 }
 
 body.dark-theme {
@@ -66,6 +74,14 @@ body.dark-theme {
     --problem-severe-color: #f44336;
     --stats-bg: #2a2a3e;
     --shadow: rgba(0, 0, 0, 0.5);
+    --trainer-card-bg: #2a2a3e;
+    --trainer-card-border: #3a3a4e;
+    --trainer-card-hover: #64ffda;
+    --vowel-btn-bg: #2a2a4e;
+    --vowel-btn-border: #64ffda;
+    --vowel-btn-hover: #8892b0;
+    --back-btn-bg: rgba(100, 255, 218, 0.1);
+    --back-btn-color: #64ffda;
 }
 
 body {
@@ -403,6 +419,151 @@ h2 {
     margin: 20px 0;
 }
 
+/* Main screen / trainer selection */
+.main-screen {
+    display: none;
+}
+
+.main-screen.active {
+    display: block;
+}
+
+.trainer-selection {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.trainer-card {
+    background: var(--trainer-card-bg);
+    border: 2px solid var(--trainer-card-border);
+    border-radius: 15px;
+    padding: 30px 25px;
+    cursor: pointer;
+    transition: all 0.3s;
+    flex: 1;
+    min-width: 200px;
+    max-width: 280px;
+    text-align: center;
+}
+
+.trainer-card:hover {
+    border-color: var(--trainer-card-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px var(--shadow);
+}
+
+.trainer-card-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+}
+
+.trainer-card-title {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    transition: color 0.3s;
+}
+
+.trainer-card-desc {
+    font-size: 0.95em;
+    color: var(--text-secondary);
+    transition: color 0.3s;
+}
+
+/* Back button */
+.back-btn {
+    background: var(--back-btn-bg);
+    color: var(--back-btn-color);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95em;
+    margin-bottom: 15px;
+    transition: all 0.3s;
+}
+
+.back-btn:hover {
+    background: var(--trainer-card-hover);
+    color: #ffffff;
+}
+
+/* Vowel buttons inline in word */
+.word-display {
+    text-align: center;
+    font-size: 2.5em;
+    margin: 40px 0 10px 0;
+    letter-spacing: 3px;
+    color: var(--text-primary);
+    font-weight: bold;
+    transition: color 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    line-height: 1.4;
+}
+
+.consonant-char {
+    display: inline-block;
+    color: var(--text-primary);
+    transition: color 0.3s;
+}
+
+.vowel-btn-inline {
+    display: inline-block;
+    background: var(--vowel-btn-bg);
+    border: 2px solid var(--vowel-btn-border);
+    color: var(--vowel-btn-border);
+    font-size: 1em;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: inherit;
+    line-height: 1.2;
+    min-height: 44px;
+    min-width: 44px;
+}
+
+.vowel-btn-inline:hover:not(:disabled) {
+    background: var(--vowel-btn-hover);
+    color: #ffffff;
+    border-color: var(--vowel-btn-hover);
+    transform: scale(1.1);
+}
+
+.vowel-btn-inline:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.vowel-btn-inline.correct {
+    background: var(--input-correct);
+    border-color: var(--input-correct-border);
+    color: var(--feedback-correct);
+}
+
+.vowel-btn-inline.correct-highlight {
+    background: var(--input-correct);
+    border-color: var(--input-correct-border);
+    color: var(--feedback-correct);
+    animation: pulse 0.5s;
+}
+
+.vowel-btn-inline.incorrect {
+    background: var(--input-incorrect);
+    border-color: var(--input-incorrect-border);
+    color: var(--feedback-incorrect);
+    animation: shake 0.3s;
+}
+
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-10px); }
@@ -499,6 +660,51 @@ h2 {
     .emoji {
         font-size: 3em;
         margin: 15px 0;
+    }
+
+    /* Trainer selection responsive */
+    .trainer-selection {
+        flex-direction: column;
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .trainer-card {
+        min-width: 100%;
+        max-width: 100%;
+        padding: 25px 20px;
+    }
+
+    .trainer-card-icon {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+    }
+
+    .trainer-card-title {
+        font-size: 1.2em;
+    }
+
+    .trainer-card-desc {
+        font-size: 0.9em;
+    }
+
+    /* Back button responsive */
+    .back-btn {
+        padding: 8px 14px;
+        font-size: 0.9em;
+        margin-bottom: 10px;
+    }
+
+    /* Vowel buttons inline responsive */
+    .vowel-btn-inline {
+        font-size: 0.8em;
+        padding: 2px 4px;
+        min-height: 40px;
+        min-width: 40px;
+    }
+
+    .consonant-char {
+        font-size: 0.9em;
     }
 
     /* Mode selection responsive */
