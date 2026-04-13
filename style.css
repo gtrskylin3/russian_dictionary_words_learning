@@ -82,6 +82,10 @@ body.dark-theme {
     --vowel-btn-hover: #8892b0;
     --back-btn-bg: rgba(100, 255, 218, 0.1);
     --back-btn-color: #64ffda;
+    --pre-pri-btn-bg: #2a2a4e;
+    --pre-pri-btn-border: #64ffda;
+    --pre-pri-btn-color: #e0e0e0;
+    --pre-pri-btn-hover: #8892b0;
 }
 
 body {
@@ -582,6 +586,66 @@ body.dark-theme .vowel-btn-inline {
     color: #e0e0e0;
 }
 
+/* PRE/PRI buttons for Task 10 */
+.pre-pri-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin: 30px 0;
+}
+
+.pre-pri-btn {
+    background: var(--pre-pri-btn-bg);
+    border: 3px solid var(--pre-pri-btn-border);
+    color: var(--pre-pri-btn-color);
+    font-size: 2em;
+    font-weight: bold;
+    padding: 15px 40px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 120px;
+}
+
+.pre-pri-btn:hover:not(:disabled) {
+    background: var(--pre-pri-btn-hover);
+    color: #ffffff;
+    border-color: var(--pre-pri-btn-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--shadow);
+}
+
+.pre-pri-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.pre-pri-btn.correct {
+    background: var(--input-correct);
+    border-color: var(--input-correct-border);
+    color: var(--feedback-correct);
+}
+
+.pre-pri-btn.correct-highlight {
+    background: var(--input-correct);
+    border-color: var(--input-correct-border);
+    color: var(--feedback-correct);
+    animation: pulse 0.5s;
+}
+
+.pre-pri-btn.incorrect {
+    background: var(--input-incorrect);
+    border-color: var(--input-incorrect-border);
+    color: var(--feedback-incorrect);
+    animation: shake 0.3s;
+}
+
+/* Dark theme PRE/PRI buttons */
+body.dark-theme .pre-pri-btn {
+    background: var(--pre-pri-btn-bg);
+    color: var(--pre-pri-btn-color);
+}
+
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-10px); }
@@ -786,6 +850,20 @@ body.dark-theme .vowel-btn-inline {
     .layout-warning {
         font-size: 0.95em;
         margin-bottom: 12px;
+    }
+
+    /* PRE/PRI buttons responsive */
+    .pre-pri-buttons {
+        flex-direction: column;
+        gap: 12px;
+        margin: 20px 0;
+    }
+
+    .pre-pri-btn {
+        font-size: 1.5em;
+        padding: 12px 30px;
+        min-width: 100%;
+        min-height: 56px;
     }
 
     /* Input responsive */
