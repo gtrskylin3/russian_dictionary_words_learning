@@ -667,7 +667,13 @@
             displayContainer.innerHTML = '';
 
             for (let i = 0; i < word.length; i++) {
-                if (VOWELS.includes(word[i])) {
+                if (word[i] === 'ё') {
+                    // Display Ё as Е (since Ё always has stress)
+                    const span = document.createElement('span');
+                    span.textContent = 'е';
+                    span.className = 'consonant-char';
+                    displayContainer.appendChild(span);
+                } else if (VOWELS.includes(word[i])) {
                     const btn = document.createElement('button');
                     btn.className = 'vowel-btn-inline';
                     btn.textContent = word[i];
@@ -682,7 +688,7 @@
                 }
             }
 
-            // Display hint if available
+            // Display hint if available (same style as Task 9)
             const hintElement = document.getElementById('task4WordHint');
             hintElement.textContent = hint ? '(' + hint + ')' : '';
 
@@ -730,7 +736,7 @@
                     }
                 });
 
-                document.getElementById('task4Feedback').textContent = '❌ Неправильно! Правильное ударение: ' + entry.original;
+                document.getElementById('task4Feedback').textContent = '❌ Неправильно! Правильное ударение: ' + entry.original.replace(/ё/g, 'е');
                 document.getElementById('task4Feedback').className = 'feedback incorrect';
 
                 const existingIndex = task4ErrorHistory.findIndex(e => e.word === entry.word && e.stressedIndex === entry.stressedIndex);
