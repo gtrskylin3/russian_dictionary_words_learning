@@ -148,6 +148,7 @@
             <div class="word-display-wrapper">
                 <div class="word-display" id="task4WordDisplay"></div>
             </div>
+            <div class="word-hint" id="task4WordHint"></div>
 
             <div class="feedback" id="task4Feedback"></div>
 
@@ -529,7 +530,24 @@
                 const lines = text.split('\n').filter(line => line.trim() !== '');
 
                 task4Database = lines.map(line => {
-                    const original = line.trim();
+                    let original = line.trim();
+                    let hint = '';
+
+                    // Check for hint in parentheses at the end
+                    const hintMatch = original.match(/^(.+?)\s*\((.+?)\)$/);
+                    if (hintMatch) {
+                        // Check if the part before the hint contains uppercase vowels (stress markers)
+                        const wordPart = hintMatch[1].trim();
+                        const hintPart = hintMatch[2].trim();
+                        
+                        // Only treat as hint if the word part has stress markers
+                        const hasStressMarker = /[А-ЯЁ]/.test(wordPart);
+                        if (hasStressMarker) {
+                            original = wordPart;
+                            hint = hintPart;
+                        }
+                    }
+
                     const lower = original.toLowerCase();
 
                     // Find the index of the uppercase (stressed) vowel
@@ -554,7 +572,8 @@
                         word: lower,
                         stressedIndex,
                         stressedVowel: stressedIndex >= 0 ? lower[stressedIndex] : '',
-                        vowelPositions
+                        vowelPositions,
+                        hint
                     };
                 }).filter(entry => entry.stressedIndex >= 0); // Filter out entries without stress
 
@@ -613,6 +632,17 @@
                 task4GameWords = shuffleArray([...task4Database]).slice(0, task4SelectedMode);
             }
 
+            task4GameWords = task4GameWords.map(entry => {
+                return {
+                    word: entry.word,
+                    original: entry.original,
+                    stressedIndex: entry.stressedIndex,
+                    stressedVowel: entry.stressedVowel,
+                    vowelPositions: entry.vowelPositions,
+                    hint: entry.hint || ''
+                };
+            });
+
             task4CurrentIndex = 0;
             task4CorrectAnswers = 0;
             task4IncorrectAnswers = 0;
@@ -630,6 +660,7 @@
             task4Answered = false;
             const entry = task4GameWords[task4CurrentIndex];
             const word = entry.word;
+            const hint = entry.hint;
 
             // Build the word display with vowel buttons inline
             const displayContainer = document.getElementById('task4WordDisplay');
@@ -650,6 +681,10 @@
                     displayContainer.appendChild(span);
                 }
             }
+
+            // Display hint if available
+            const hintElement = document.getElementById('task4WordHint');
+            hintElement.textContent = hint ? '(' + hint + ')' : '';
 
             document.getElementById('task4Feedback').textContent = '';
             document.getElementById('task4Feedback').className = 'feedback';
@@ -749,7 +784,7 @@
 
             task4GameWords = task4ErrorHistory.map(error => {
                 const dbEntry = task4Database.find(w => w.word === error.word);
-                return dbEntry || { word: error.word, original: error.original, stressedIndex: error.stressedIndex, vowelPositions: [] };
+                return dbEntry || { word: error.word, original: error.original, stressedIndex: error.stressedIndex, vowelPositions: [], hint: '' };
             });
 
             task4GameWords = shuffleArray(task4GameWords);
