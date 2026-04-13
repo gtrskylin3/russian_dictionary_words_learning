@@ -668,11 +668,13 @@
 
             for (let i = 0; i < word.length; i++) {
                 if (word[i] === 'ё') {
-                    // Display Ё as Е (since Ё always has stress)
-                    const span = document.createElement('span');
-                    span.textContent = 'е';
-                    span.className = 'consonant-char';
-                    displayContainer.appendChild(span);
+                    // Display Ё as Е (since Ё always has stress) - make it clickable
+                    const btn = document.createElement('button');
+                    btn.className = 'vowel-btn-inline';
+                    btn.textContent = 'е';
+                    btn.dataset.vowelIndex = i;
+                    btn.onclick = () => checkTask4Stress(i, btn);
+                    displayContainer.appendChild(btn);
                 } else if (VOWELS.includes(word[i])) {
                     const btn = document.createElement('button');
                     btn.className = 'vowel-btn-inline';
